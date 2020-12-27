@@ -19,6 +19,14 @@ for i=2:n-1
     end
 end
 
+r1 = @(x, y)1 + sin(2 * pi * x);
+r2 = @(x, y)1 + cos(1 / x + 1e-3);
+r3 = @(x, y)1/2 - abs(y - 1/2);
+r4 = @(x, y)(1 + exp(x * y))^(-1);
+r5 = @(x, y)1 + asin(-1 + 2 * sqrt(x * y));
+
+plot_boundary(r1);
+
 for iter=1:iter_count
     num_grad_mat = get_graph_gradient(total_graph, active_mask, constraint_graph, n, length, gradient_diff);
 %     num_grad_mat
@@ -62,6 +70,7 @@ function val = eval_triag_area_relative_to_point(i, j, total_graph, length)
     end
 end
 
+
 % Calculating numerical gradient.
 % The gradient w.r.t xi is calculated by calculating 
 % f(x1,x2,...,xi - @graident_diff,...,xn), f(x1,x2,...,xi,...,xn), 
@@ -88,4 +97,29 @@ function numerical_grad = get_graph_gradient(total_graph, active_mask, constrain
             end
         end
     end
+end
+
+function status = plot_boundary(eval_func)
+    status = 1;
+    x1 = zeros(1, 100);
+    x2 = linspace(0, 1);
+    x3 = ones(1, 100);
+    y1 = zeros(1, 100);
+    y2 = linspace(0, 1);
+    y3 = ones(1, 100);
+    
+    Z = zeros(4, 100);
+    for i=1:100
+        Z(1, i) = eval_func(x1(i), y2(i));
+        Z(2, i) = eval_func(x3(i), y2(i));
+        Z(3, i) = eval_func(x2(i), y1(i));
+        Z(4, i) = eval_func(x2(i), y3(i));
+    end
+    
+    plot3(x1, y2, Z(1,:));
+    hold on;
+    plot3(x3, y2, Z(2,:));
+    plot3(x2, y1, Z(3,:));
+    plot3(x2, y3, Z(4,:));
+    hold off;
 end
