@@ -1,5 +1,6 @@
 % Perform an armijo line search and return the updated matrix
-% The 
+% The @obj_diff the the difference between the updated function value and
+% the original function value
 function [graph, obj_diff] = armijo(total_graph, constraint_graph, size, length, gradient_diff, sigma, alpha, gamma)
     grad_at_x = get_graph_gradient(total_graph, constraint_graph, size, length, gradient_diff);
     val_at_x = eval_graph(total_graph, constraint_graph, size, length);

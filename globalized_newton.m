@@ -9,10 +9,18 @@ function [graph, obj_diff, newton_or_armijo] = globalized_newton(total_graph,...
     % Transforming the descent direction and gradient to vector form
     gradient_transpose = transpose(gradient(2:size-1, 2:size-1));
     gradient_vec = gradient_transpose(:);
-    [descent_direction, r_condition] = linsolve(hessian, gradient_vec);
-    
+    [descent_direction, r_condition] = linsolve(hessian, -gradient_vec);
+%     hessian
+%     gradient
+%     gradient_vec
+%     descent_direction
+%     
+%     hessian
     % If the matrix is ill-conditioned or does not satisfy the condition, 
     % use armijo. Otherwise use newton direction
+%     r_condition
+%     -dot(gradient_vec, descent_direction)
+%     min(beta1, beta2 * norm(descent_direction)^p) * norm(descent_direction)^2
     if r_condition < 1e-12 || (-dot(gradient_vec, descent_direction) <...
             min(beta1, beta2 * norm(descent_direction)^p) * norm(descent_direction)^2)
         descent_direction = -gradient_vec;

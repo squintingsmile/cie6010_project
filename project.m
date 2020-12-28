@@ -1,4 +1,4 @@
-n = 10; % Size of the matrix
+n = 20; % Size of the matrix
 length = 1 / (n - 1);
 iter_count = 500;
 gradient_diff = 1e-3;
@@ -15,7 +15,7 @@ constraint_graph = zeros(n); % Indicating the inequality contraint on each
 for i=2:n-1
     for j=2:n-1
         active_mask(i,j) = 1;
-        total_graph(i,j) = 10;
+        total_graph(i,j) = 0;
     end
 end
 
@@ -24,6 +24,7 @@ r2 = @(x, y)1 + cos(1 / x + 1e-3);
 r3 = @(x, y)1/2 - abs(y - 1/2);
 r4 = @(x, y)(1 + exp(x * y))^(-1);
 r5 = @(x, y)1 + asin(-1 + 2 * sqrt(x * y));
+constant_boundary = @(x,y) 0;
 
 total_graph = set_boundary(r1, total_graph, n);
 
@@ -53,20 +54,41 @@ plot_boundary(r1);
 
 
 % Globalized Newton codes
+% sigma = 0.5;
+% alpha = 1;
+% gamma = 0.05;
+% beta1 = 1e-6;
+% beta2 = 1e-6;
+% p = 0.1;
+% for iter=1:iter_count
+%     [total_graph, obj_diff, newton] = globalized_newton(total_graph,...
+%     constraint_graph, n, length, gradient_diff, sigma, alpha, gamma, beta1, beta2, p); 
+%     if newton == 1
+%         fprintf("newton\n");
+%     else
+%         fprintf("armijo\n");
+%     end
+%     if mod(iter, 100) == 0
+%         fprintf("iteration count: %d\n", iter);
+%     end
+% end
+
+% L-BFGS codes
+S = [];
+Y = [];
 sigma = 0.5;
 alpha = 1;
 gamma = 0.05;
-beta1 = 1e-6;
-beta2 = 1e-6;
-p = 0.1;
+num_history = 0;
+max_history = 10;
 for iter=1:iter_count
+    [total_graph, obj_diff, S, Y] = L_BFGS(total_graph,...
+    constraint_graph, n, length, gradient_diff, sigma, alpha, gamma,...
+    S, Y, num_history, max_history);
     if mod(iter, 100) == 0
         fprintf("iteration count: %d\n", iter);
     end
-    [total_graph, obj_diff, newton] = globalized_newton(total_graph,...
-    constraint_graph, n, length, gradient_diff, sigma, alpha, gamma, beta1, beta2, p); 
 end
-
 
 % Plot the surface
 [X,Y] = meshgrid(0:length:1,0:length:1);
