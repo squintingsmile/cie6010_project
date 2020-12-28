@@ -1,4 +1,4 @@
-function [graph, obj_diff, updated_S, updated_Y] = L_BFGS(total_graph,...
+function [graph, obj_diff, obj_val, grad_norm, updated_S, updated_Y] = L_BFGS(total_graph,...
     constraint_graph, size, length, gradient_diff, sigma, alpha, gamma,...
     S, Y, num_history, max_history)
 
@@ -87,5 +87,7 @@ function [graph, obj_diff, updated_S, updated_Y] = L_BFGS(total_graph,...
     updated_S(:, end) = -current_step * r;
     updated_Y(:, end) = updated_gradient_vec - gradient_vec;
     
+    obj_val = val_at_x;
+    grad_norm = norm(gradient_vec);
 end
 

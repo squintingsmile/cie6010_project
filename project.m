@@ -28,7 +28,10 @@ constant_boundary = @(x,y) 0;
 
 total_graph = set_boundary(r1, total_graph, n);
 
-plot_boundary(r1);
+gradient_norm_vec = zeros(iter_count);
+optimal_gap_vec = zeros(iter_count);
+
+% plot_boundary(r1);
 
 % SGD codes
 % for iter=1:iter_count
@@ -46,10 +49,13 @@ plot_boundary(r1);
 % alpha = 1;
 % gamma = 0.05;
 % for iter=1:iter_count
+%     [total_graph, obj_diff, obj_val, grad_norm] = armijo(total_graph,...
+%          constraint_graph, n, length, gradient_diff, sigma, alpha, gamma);
+%     gradient_norm_vec(iter) = grad_norm;
+%     optimal_gap_vec(iter) = obj_val;
 %     if mod(iter, 100) == 0
 %         fprintf("iteration count: %d\n", iter);
 %     end
-%     [total_graph, obj_diff] = armijo(total_graph, constraint_graph, n, length, gradient_diff, sigma, alpha, gamma); 
 % end
 
 
@@ -61,13 +67,16 @@ plot_boundary(r1);
 % beta2 = 1e-6;
 % p = 0.1;
 % for iter=1:iter_count
-%     [total_graph, obj_diff, newton] = globalized_newton(total_graph,...
+%     [total_graph, obj_diff, obj_val, grad_norm, newton] = globalized_newton(total_graph,...
 %     constraint_graph, n, length, gradient_diff, sigma, alpha, gamma, beta1, beta2, p); 
 %     if newton == 1
 %         fprintf("newton\n");
 %     else
 %         fprintf("armijo\n");
 %     end
+%
+%     gradient_norm_vec(iter) = grad_norm;
+%     optimal_gap_vec(iter) = obj_val;
 %     if mod(iter, 100) == 0
 %         fprintf("iteration count: %d\n", iter);
 %     end
@@ -82,19 +91,40 @@ gamma = 0.05;
 num_history = 0;
 max_history = 10;
 for iter=1:iter_count
-    [total_graph, obj_diff, S, Y] = L_BFGS(total_graph,...
+    [total_graph, obj_diff, obj_val, grad_norm, S, Y] = L_BFGS(total_graph,...
     constraint_graph, n, length, gradient_diff, sigma, alpha, gamma,...
     S, Y, num_history, max_history);
+
+    gradient_norm_vec(iter) = grad_norm;
+    optimal_gap_vec(iter) = obj_val;
     if mod(iter, 100) == 0
         fprintf("iteration count: %d\n", iter);
     end
 end
 
 % Plot the surface
+figure(1);
 [X,Y] = meshgrid(0:length:1,0:length:1);
 T = delaunay(X,Y);
 trisurf(T, X,Y,total_graph);
+title('Surface plot');
 
+% Plot norm of the gradient
+figure(2);
+plot(1:iter_count, gradient_norm_vec);
+title('Norm of gradient plot');
+xlabel('Iteration number');
+ylabel('Norm of gradient');
+
+% Plot objective value
+figure(3);
+% title('Objective value plot');
+plot(1:iter_count, optimal_gap_vec);
+grid on;
+title('Objective value plot');
+xlabel('Iteration number');
+ylabel('Objective value');
+% grid off;
 
 % Plotting the boundary
 function status = plot_boundary(eval_func)

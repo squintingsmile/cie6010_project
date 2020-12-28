@@ -1,6 +1,6 @@
 % This function performs a globalized newton step. The @newton_or_armijo
 % variable indicates which method it is actually using
-function [graph, obj_diff, newton_or_armijo] = globalized_newton(total_graph,...
+function [graph, obj_diff, obj_val, grad_norm, newton_or_armijo] = globalized_newton(total_graph,...
     constraint_graph, size, length, gradient_diff, sigma, alpha, gamma, beta1, beta2, p)
     
     gradient = get_graph_gradient(total_graph, constraint_graph, size, length, gradient_diff);
@@ -50,7 +50,9 @@ function [graph, obj_diff, newton_or_armijo] = globalized_newton(total_graph,...
         end
         break;
     end
-    graph = tmp_mat;
+    graph = tmp_mat;    
     
+    obj_val = val_at_x;
+    grad_norm = norm(gradient_vec);
 end
 
