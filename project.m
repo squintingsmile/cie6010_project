@@ -1,6 +1,6 @@
-n = 20; % Size of the matrix
+n = 10; % Size of the matrix
 length = 1 / (n - 1);
-iter_count = 4000;
+iter_count = 500;
 gradient_diff = 1e-3;
 step_size = 0.2;
 
@@ -28,35 +28,51 @@ r5 = @(x, y)1 + asin(-1 + 2 * sqrt(x * y));
 total_graph = set_boundary(r1, total_graph, n);
 
 plot_boundary(r1);
-[X,Y] = meshgrid(0:length:1,0:length:1);
-
 
 % SGD codes
 % for iter=1:iter_count
 %     if mod(iter, 100) == 0
 %         fprintf("iteration count: %d\n", iter);
 %     end
-%     num_grad_mat = get_graph_gradient(total_graph, active_mask, constraint_graph, n, length, gradient_diff);
+%     num_grad_mat = get_graph_gradient(total_graph, constraint_graph, n, length, gradient_diff);
 %     step = step_size * num_grad_mat;
 %     total_graph = total_graph - step; 
 % end
 
 
 % Backtracking codes
+% sigma = 0.5;
+% alpha = 1;
+% gamma = 0.05;
+% for iter=1:iter_count
+%     if mod(iter, 100) == 0
+%         fprintf("iteration count: %d\n", iter);
+%     end
+%     [total_graph, obj_diff] = armijo(total_graph, constraint_graph, n, length, gradient_diff, sigma, alpha, gamma); 
+% end
+
+
+% Globalized Newton codes
 sigma = 0.5;
 alpha = 1;
 gamma = 0.05;
+beta1 = 1e-6;
+beta2 = 1e-6;
+p = 0.1;
 for iter=1:iter_count
     if mod(iter, 100) == 0
         fprintf("iteration count: %d\n", iter);
     end
-    total_graph = armijo(total_graph, active_mask, constraint_graph, n, length, gradient_diff, sigma, alpha, gamma); 
+    [total_graph, obj_diff, newton] = globalized_newton(total_graph,...
+    constraint_graph, n, length, gradient_diff, sigma, alpha, gamma, beta1, beta2, p); 
 end
 
 
-
 % Plot the surface
-surf(X,Y,total_graph);
+[X,Y] = meshgrid(0:length:1,0:length:1);
+T = delaunay(X,Y);
+trisurf(T, X,Y,total_graph);
+
 
 % Plotting the boundary
 function status = plot_boundary(eval_func)
