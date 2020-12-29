@@ -14,6 +14,9 @@ function hessian = get_graph_hessian(total_graph, constraint_graph, size, length
                 continue;
             end
             
+            % The gradient of g w.r.t xk only contains variable xt if and 
+            % only if xk and xt are in the same triangle. Therefore, we 
+            % only the xt such that xk and xt are in the same triangle
             for k=-1:1
                 for l=-1:1
                     xt_i = i + k;
@@ -30,11 +33,18 @@ function hessian = get_graph_hessian(total_graph, constraint_graph, size, length
                                   % g(xt,xk) and g(xt-h,xk) where we want is
                                   % the hessian at entry [xk,xt]
                     tmp_val_xt = total_graph(xt_i, xt_j);
+                    
+                    % calculating dg(xt+h, xk) / dxk, dg(xt, xk) / dxk
+                    % and dg(xt-h, xk) / dxk
                     for sample_count1=-1:1
+                        
                         samples = zeros(1, 3);
                         total_graph(xt_i, xt_j) = tmp_val_xt + sample_count1 * gradient_diff;
                         
                         tmp_val_xk = total_graph(xk_i, xk_j);
+                        
+                        % Calculating g(xt+ah, xk+h), g(xt+ah, xk) and
+                        % g(xt+ah, xk-h) where a = -1, 0, 1
                         for sample_count2=-1:1
                             total_graph(xk_i, xk_j) = tmp_val_xk + sample_count2 * gradient_diff;
 %                             total_graph

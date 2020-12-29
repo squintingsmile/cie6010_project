@@ -6,16 +6,18 @@ function [graph, obj_diff, obj_val, grad_norm, newton_or_armijo] = globalized_ne
     gradient = get_graph_gradient(total_graph, constraint_graph, size, length, gradient_diff);
     hessian = get_graph_hessian(total_graph, constraint_graph, size, length, gradient_diff);
     
-    % Transforming the descent direction and gradient to vector form
+    % Transforming the descent direction and gradient from the 2d matrix to vector form
+    % while ignoring the boundary elements
     gradient_transpose = transpose(gradient(2:size-1, 2:size-1));
     gradient_vec = gradient_transpose(:);
-    [descent_direction, r_condition] = linsolve(hessian, -gradient_vec);
+    [descent_direction, r_condition] = linsolve(hessian + 1e-12 * eye((size-2)^2), -gradient_vec);
+    
 %     hessian
 %     gradient
 %     gradient_vec
 %     descent_direction
 %     
-%     hessian
+%       hessian
     % If the matrix is ill-conditioned or does not satisfy the condition, 
     % use armijo. Otherwise use newton direction
 %     r_condition

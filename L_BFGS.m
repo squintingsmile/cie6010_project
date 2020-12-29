@@ -1,7 +1,13 @@
+% The function performs a BFGS step. @S, @Y are matrices with 
+% S = [s1,s2,...,sn], Y = [y1,y2,...,yn] where n = @num_history
+% @num_history indicates the current iteration number 
+% @max_history indicates how many past si and yi we need to store
+% The returned value includes the updated S and updated Y
 function [graph, obj_diff, obj_val, grad_norm, updated_S, updated_Y] = L_BFGS(total_graph,...
     constraint_graph, size, length, gradient_diff, sigma, alpha, gamma,...
     S, Y, num_history, max_history)
 
+% Setting up the updatd value
     if num_history == 0
         updated_S = zeros((size-2)^2, 1);
         updated_Y = zeros((size-2)^2, 1); 
@@ -23,6 +29,8 @@ function [graph, obj_diff, obj_val, grad_norm, updated_S, updated_Y] = L_BFGS(to
     
     gradient = get_graph_gradient(total_graph, constraint_graph, size, length, gradient_diff);
 
+    % If the iteration is 0 and we do not have previous information, simply
+    % set hessian to be identity matrix
     if num_history == 0
         hessian = eye((size-2)^2, (size-2)^2);
     else
@@ -36,6 +44,7 @@ function [graph, obj_diff, obj_val, grad_norm, updated_S, updated_Y] = L_BFGS(to
     gradient_transpose = transpose(gradient(2:size-1, 2:size-1));
     gradient_vec = gradient_transpose(:);
     
+    % Estimating the hessian 
     q = gradient_vec;
     A = zeros(num_history, 1);
     rho = zeros(num_history, 1);
@@ -56,6 +65,7 @@ function [graph, obj_diff, obj_val, grad_norm, updated_S, updated_Y] = L_BFGS(to
         r = r + (A(i) - beta) * s_i;
     end
     
+    % After we get the estimation of the descent direction. Perform armijo
     descent_direction = -r;
     val_at_x = eval_graph(total_graph, constraint_graph, size, length);
     current_step = alpha;

@@ -1,4 +1,4 @@
-n = 20; % Size of the matrix
+n = 10; % Size of the matrix
 length = 1 / (n - 1);
 iter_count = 500;
 gradient_diff = 1e-3;
@@ -20,13 +20,13 @@ for i=2:n-1
 end
 
 r1 = @(x, y)1 + sin(2 * pi * x);
-r2 = @(x, y)1 + cos(1 / x + 1e-3);
+r2 = @(x, y)1 + cos(1 / (x + 1e-3));
 r3 = @(x, y)1/2 - abs(y - 1/2);
 r4 = @(x, y)(1 + exp(x * y))^(-1);
 r5 = @(x, y)1 + asin(-1 + 2 * sqrt(x * y));
 constant_boundary = @(x,y) 0;
 
-total_graph = set_boundary(r1, total_graph, n);
+total_graph = set_boundary(r5, total_graph, n);
 
 gradient_norm_vec = zeros(iter_count);
 optimal_gap_vec = zeros(iter_count);
@@ -60,40 +60,22 @@ optimal_gap_vec = zeros(iter_count);
 
 
 % Globalized Newton codes
-% sigma = 0.5;
-% alpha = 1;
-% gamma = 0.05;
-% beta1 = 1e-6;
-% beta2 = 1e-6;
-% p = 0.1;
-% for iter=1:iter_count
-%     [total_graph, obj_diff, obj_val, grad_norm, newton] = globalized_newton(total_graph,...
-%     constraint_graph, n, length, gradient_diff, sigma, alpha, gamma, beta1, beta2, p); 
-%     if newton == 1
-%         fprintf("newton\n");
-%     else
-%         fprintf("armijo\n");
-%     end
-%
-%     gradient_norm_vec(iter) = grad_norm;
-%     optimal_gap_vec(iter) = obj_val;
-%     if mod(iter, 100) == 0
-%         fprintf("iteration count: %d\n", iter);
-%     end
-% end
-
-% L-BFGS codes
-S = [];
-Y = [];
 sigma = 0.5;
 alpha = 1;
 gamma = 0.05;
-num_history = 0;
-max_history = 10;
+beta1 = 1e-6;
+beta2 = 1e-6;
+p = 0.1;
 for iter=1:iter_count
-    [total_graph, obj_diff, obj_val, grad_norm, S, Y] = L_BFGS(total_graph,...
-    constraint_graph, n, length, gradient_diff, sigma, alpha, gamma,...
-    S, Y, num_history, max_history);
+%     total_graph
+    [total_graph, obj_diff, obj_val, grad_norm, newton] = globalized_newton(total_graph,...
+    constraint_graph, n, length, gradient_diff, sigma, alpha, gamma, beta1, beta2, p); 
+%     total_graph
+    if newton == 1
+        fprintf("newton\n");
+    else
+        fprintf("armijo\n");
+    end
 
     gradient_norm_vec(iter) = grad_norm;
     optimal_gap_vec(iter) = obj_val;
@@ -101,6 +83,26 @@ for iter=1:iter_count
         fprintf("iteration count: %d\n", iter);
     end
 end
+
+% L-BFGS codes
+% S = [];
+% Y = [];
+% sigma = 0.5;
+% alpha = 1;
+% gamma = 0.05;
+% num_history = 0;
+% max_history = 10;
+% for iter=1:iter_count
+%     [total_graph, obj_diff, obj_val, grad_norm, S, Y] = L_BFGS(total_graph,...
+%     constraint_graph, n, length, gradient_diff, sigma, alpha, gamma,...
+%     S, Y, num_history, max_history);
+% 
+%     gradient_norm_vec(iter) = grad_norm;
+%     optimal_gap_vec(iter) = obj_val;
+%     if mod(iter, 100) == 0
+%         fprintf("iteration count: %d\n", iter);
+%     end
+% end
 
 % Plot the surface
 figure(1);

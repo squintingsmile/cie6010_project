@@ -5,6 +5,7 @@
 % of matlab function @gradient. The @gradient function will then calculate
 % the gradient w.r.t xi 
 function numerical_grad = get_graph_gradient(total_graph, constraint_graph, size, length, gradient_diff)
+
     numerical_grad = zeros(size);
     triag_areas_tmp = zeros(2*size,size); % Storing the areas of the triangles
     for i=2:size-1
