@@ -75,7 +75,7 @@ function hessian = get_graph_hessian(total_graph, constraint_graph, size, length
                     
                     total_graph(xt_i, xt_j) = tmp_val_xt;
                     total_graph(xk_i, xk_j) = tmp_val_xk;   
-                    val = val / gradient_diff^2;
+                    val = val / (4 * gradient_diff^2);
                     hessian(xk_idx, xt_idx) = val;
                     hessian(xt_idx, xk_idx) = val;
 
