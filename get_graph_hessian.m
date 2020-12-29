@@ -10,10 +10,10 @@ function hessian = get_graph_hessian(total_graph, constraint_graph, size, length
         for j=2:size-1
             % We assume that hessian(i, j) = hessian(j, i). Thus we only
             % need to evaluate on of them 
-            if i < j
-                continue;
-            end
-            
+%             if i < j
+%                 continue;
+%             end
+
             % The gradient of g w.r.t xk only contains variable xt if and 
             % only if xk and xt are in the same triangle. Therefore, we 
             % only the xt such that xk and xt are in the same triangle
@@ -24,6 +24,16 @@ function hessian = get_graph_hessian(total_graph, constraint_graph, size, length
                     xk_i = i;
                     xk_j = j;
                     
+                    xt_idx = (xt_i - 2) * (size -2) + xt_j - 1; % Here we treat the xi,j as a column vector instead of a 2d matrix
+                                         % Therefore, we need to calculate
+                                         % the corresponding index in the
+                                         % column.
+                    xk_idx = (xk_i - 2) * (size -2) + xk_j - 1;
+
+                    if xt_idx > xk_idx
+                        continue;
+                    end
+                    
                     if is_on_boundary(size, xt_i, xt_j) == 1 ||...
                             (k == -1 && l == 1) || (k == 1 && l == -1)
                         continue;
@@ -33,40 +43,42 @@ function hessian = get_graph_hessian(total_graph, constraint_graph, size, length
                                   % g(xt,xk) and g(xt-h,xk) where we want is
                                   % the hessian at entry [xk,xt]
                     tmp_val_xt = total_graph(xt_i, xt_j);
-                    
+                    tmp_val_xk = total_graph(xk_i, xk_j);             
                     % calculating dg(xt+h, xk) / dxk, dg(xt, xk) / dxk
                     % and dg(xt-h, xk) / dxk
-                    for sample_count1=-1:1
-                        
-                        samples = zeros(1, 3);
-                        total_graph(xt_i, xt_j) = tmp_val_xt + sample_count1 * gradient_diff;
-                        
-                        tmp_val_xk = total_graph(xk_i, xk_j);
-                        
-                        % Calculating g(xt+ah, xk+h), g(xt+ah, xk) and
-                        % g(xt+ah, xk-h) where a = -1, 0, 1
-                        for sample_count2=-1:1
-                            total_graph(xk_i, xk_j) = tmp_val_xk + sample_count2 * gradient_diff;
-%                             total_graph
-                            samples(sample_count2 + 2) = eval_triag_area_relative_to_point(xk_i, xk_j, total_graph, length); 
-                        end
-%                         samples
-                        grad = gradient(samples, gradient_diff);
-                        samples_grads(sample_count1 + 2) = grad(2);
-                        total_graph(xk_i, xk_j) = tmp_val_xk;
-                    end
-%                     samples_grads
-                    grad = gradient(samples_grads, gradient_diff);
-%                     grad
-                    xt_idx = (xt_i - 2) * (size -2) + xt_j - 1; % Here we treat the xi,j as a column vector instead of a 2d matrix
-                                         % Therefore, we need to calculate
-                                         % the corresponding index in the
-                                         % column.
-                    xk_idx = (xk_i - 2) * (size -2) + xk_j - 1;
                     
-                    hessian(xk_idx, xt_idx) = grad(2);
-                    hessian(xt_idx, xk_idx) = grad(2);
+                    val = 0;
+                    total_graph(xt_i, xt_j) = total_graph(xt_i, xt_j) + gradient_diff;
+                    total_graph(xk_i, xk_j) = total_graph(xk_i, xk_j) + gradient_diff;
+                    val = val + eval_triag_area_relative_to_point(xk_i, xk_j, total_graph, length);
                     
+                    total_graph(xt_i, xt_j) = tmp_val_xt;
+                    total_graph(xk_i, xk_j) = tmp_val_xk;   
+                    
+                    total_graph(xt_i, xt_j) = total_graph(xt_i, xt_j) - gradient_diff;
+                    total_graph(xk_i, xk_j) = total_graph(xk_i, xk_j) - gradient_diff;
+                    val = val + eval_triag_area_relative_to_point(xk_i, xk_j, total_graph, length);
+
+                    total_graph(xt_i, xt_j) = tmp_val_xt;
+                    total_graph(xk_i, xk_j) = tmp_val_xk;   
+                    
+                    total_graph(xt_i, xt_j) = total_graph(xt_i, xt_j) + gradient_diff;
+                    total_graph(xk_i, xk_j) = total_graph(xk_i, xk_j) - gradient_diff;
+                    val = val - eval_triag_area_relative_to_point(xk_i, xk_j, total_graph, length);
+                    
+                    total_graph(xt_i, xt_j) = tmp_val_xt;
+                    total_graph(xk_i, xk_j) = tmp_val_xk;   
+                    
+                    total_graph(xt_i, xt_j) = total_graph(xt_i, xt_j) - gradient_diff;
+                    total_graph(xk_i, xk_j) = total_graph(xk_i, xk_j) + gradient_diff;
+                    val = val - eval_triag_area_relative_to_point(xk_i, xk_j, total_graph, length);
+                    
+                    total_graph(xt_i, xt_j) = tmp_val_xt;
+                    total_graph(xk_i, xk_j) = tmp_val_xk;   
+                    val = val / gradient_diff^2;
+                    hessian(xk_idx, xt_idx) = val;
+                    hessian(xt_idx, xk_idx) = val;
+
                     total_graph(xt_i, xt_j) = tmp_val_xt;
                 end
             end

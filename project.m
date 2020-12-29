@@ -1,8 +1,9 @@
-n = 10; % Size of the matrix
+n = 40; % Size of the matrix
 length = 1 / (n - 1);
-iter_count = 500;
-gradient_diff = 1e-3;
+iter_count = 200;
+gradient_diff = 1e-2;
 step_size = 0.2;
+gradient_tol = 1e-5;
 
 total_graph = zeros(n); % Storing the boundary and values of xi,j
 active_mask = zeros(n); % Indicating which points are not boundary 
@@ -26,7 +27,7 @@ r4 = @(x, y)(1 + exp(x * y))^(-1);
 r5 = @(x, y)1 + asin(-1 + 2 * sqrt(x * y));
 constant_boundary = @(x,y) 0;
 
-total_graph = set_boundary(r5, total_graph, n);
+total_graph = set_boundary(r1, total_graph, n);
 
 gradient_norm_vec = zeros(iter_count);
 optimal_gap_vec = zeros(iter_count);
@@ -53,6 +54,10 @@ optimal_gap_vec = zeros(iter_count);
 %          constraint_graph, n, length, gradient_diff, sigma, alpha, gamma);
 %     gradient_norm_vec(iter) = grad_norm;
 %     optimal_gap_vec(iter) = obj_val;
+%     if grad_norm < gradient_tol
+%         fprintf("calculation ends after %d iterations. Norm of gradient is %f\n", iter, grad_norm);
+%         break;
+%     end
 %     if mod(iter, 100) == 0
 %         fprintf("iteration count: %d\n", iter);
 %     end
@@ -72,13 +77,18 @@ for iter=1:iter_count
     constraint_graph, n, length, gradient_diff, sigma, alpha, gamma, beta1, beta2, p); 
 %     total_graph
     if newton == 1
-        fprintf("newton\n");
+        fprintf("Performing newton step\n");
     else
-        fprintf("armijo\n");
+        fprintf("Performing armijo step\n");
     end
 
     gradient_norm_vec(iter) = grad_norm;
     optimal_gap_vec(iter) = obj_val;
+    if grad_norm < gradient_tol
+        fprintf("calculation ends after %d iterations. Norm of gradient is %f\n", iter, grad_norm);
+        break;
+    end
+    
     if mod(iter, 100) == 0
         fprintf("iteration count: %d\n", iter);
     end
@@ -99,6 +109,10 @@ end
 % 
 %     gradient_norm_vec(iter) = grad_norm;
 %     optimal_gap_vec(iter) = obj_val;
+%     if grad_norm < gradient_tol
+%         fprintf("calculation ends after %d iterations. Norm of gradient is %f\n", iter, grad_norm);
+%         break;
+%     end
 %     if mod(iter, 100) == 0
 %         fprintf("iteration count: %d\n", iter);
 %     end
@@ -113,7 +127,7 @@ title('Surface plot');
 
 % Plot norm of the gradient
 figure(2);
-plot(1:iter_count, gradient_norm_vec);
+plot(1:iter, gradient_norm_vec(1:iter));
 title('Norm of gradient plot');
 xlabel('Iteration number');
 ylabel('Norm of gradient');
@@ -121,7 +135,7 @@ ylabel('Norm of gradient');
 % Plot objective value
 figure(3);
 % title('Objective value plot');
-plot(1:iter_count, optimal_gap_vec);
+plot(1:iter, optimal_gap_vec(1:iter));
 grid on;
 title('Objective value plot');
 xlabel('Iteration number');
