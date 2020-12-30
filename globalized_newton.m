@@ -10,7 +10,7 @@ function [graph, obj_diff, obj_val, grad_norm, newton_or_armijo] = globalized_ne
     % while ignoring the boundary elements
     gradient_transpose = transpose(gradient(2:size-1, 2:size-1));
     gradient_vec = gradient_transpose(:);
-    [descent_direction, r_condition] = linsolve(hessian + 1e-12 * eye((size-2)^2), -gradient_vec);
+    [descent_direction, r_condition] = linsolve(hessian, -gradient_vec);
     
 %     hessian
 %     gradient
