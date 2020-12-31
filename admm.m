@@ -17,6 +17,9 @@ function [graph, obj_diff, obj_val, grad_norm,...
     constraint = norm(constraint_violation_vec);
     
     obj_diff = eval_graph(total_graph, constraint_graph, size, length);
+    
+    % Minimizing the augmented lagrangian with respect to x using the
+    % globalized newton's method
     for iter=1:iter_count
     %     fprintf("running\n");
         gradient = get_graph_gradient(total_graph, constraint_graph, size, length, gradient_diff);
@@ -26,18 +29,11 @@ function [graph, obj_diff, obj_val, grad_norm,...
         % Transforming the descent direction and gradient from the 2d matrix to vector form
         % while ignoring the boundary elements
         gradient_vec = ravel_graph_transpose(gradient, size);
-%         gradient_vec
         if iter == 1
             grad_norm = norm(gradient_vec);
         end
         
-    %     gradient_vec
         gradient_vec = gradient_vec + yk + rho * (x - zk);
-%         gradient_vec
-%         total_graph
-
-%         gradient_vec
-%     norm(gradient_vec)
         if norm(gradient_vec) < 1e-4
 %             fprintf("normally exiting");
             break;
@@ -48,18 +44,9 @@ function [graph, obj_diff, obj_val, grad_norm,...
        
         
         [descent_direction, r_condition] = linsolve(hessian, -gradient_vec);
-%         descent_direction
-    %     hessian
-    %     gradient
-    %     gradient_vec
-    %     descent_direction
-    %     
-    %       hessian
+
         % If the matrix is ill-conditioned or does not satisfy the condition, 
         % use armijo. Otherwise use newton direction
-    %     r_condition
-    %     -dot(gradient_vec, descent_direction)
-    %     min(beta1, beta2 * norm(descent_direction)^p) * norm(descent_direction)^2
         if r_condition < 1e-12 || (-dot(gradient_vec, descent_direction) <...
                 min(beta1, beta2 * norm(descent_direction)^p) * norm(descent_direction)^2)
             descent_direction = -gradient_vec;
@@ -97,10 +84,15 @@ function [graph, obj_diff, obj_val, grad_norm,...
     end
     
     obj_diff = eval_graph(total_graph, constraint_graph, size, length) - obj_diff;
+    
+    % Minimizing the augmented lagrangian with respect to z. In this
+    % problem minimizing with respect to z is actually a projection problem
     updated_x = ravel_graph_transpose(total_graph, size);
     updated_z = yk / rho + updated_x;
     constraint_vec = ravel_graph_transpose(constraint_graph, size);
     updated_z(updated_z < constraint_vec) = constraint_vec(updated_z < constraint_vec);
+    
+    % Update y as in admm step
     updated_y = yk + rho * (updated_x - updated_z);
     
     graph = total_graph;
