@@ -15,9 +15,8 @@ function [graph, obj_diff, obj_val, grad_norm,...
     constraint_violation_vec = ravel_graph_transpose(constraint_violation, size);
     constraint_violation_vec(constraint_mask) = 0;
     constraint = norm(constraint_violation_vec);
-%     yk
-%     zk
-    obj_diff = 0;
+    
+    obj_diff = eval_graph(total_graph, constraint_graph, size, length);
     for iter=1:iter_count
     %     fprintf("running\n");
         gradient = get_graph_gradient(total_graph, constraint_graph, size, length, gradient_diff);
@@ -38,8 +37,8 @@ function [graph, obj_diff, obj_val, grad_norm,...
 %         total_graph
 
 %         gradient_vec
-    norm(gradient_vec)
-        if norm(gradient_vec) < 1e-5
+%     norm(gradient_vec)
+        if norm(gradient_vec) < 1e-4
 %             fprintf("normally exiting");
             break;
         end
@@ -83,7 +82,7 @@ function [graph, obj_diff, obj_val, grad_norm,...
             tmp_vec = ravel_graph_transpose(tmp_mat, size);
             step_val = eval_graph(tmp_mat, constraint_graph, size, length)...
                 + dot(yk, tmp_vec - zk) + rho * norm(tmp_vec - zk)^2 / 2;
-            obj_diff = val_at_x - step_val;
+
 
             if step_val - val_at_x > - gamma * current_step * rhs_inner_prod
                 current_step = current_step * sigma;
@@ -97,6 +96,7 @@ function [graph, obj_diff, obj_val, grad_norm,...
         total_graph = tmp_mat;
     end
     
+    obj_diff = eval_graph(total_graph, constraint_graph, size, length) - obj_diff;
     updated_x = ravel_graph_transpose(total_graph, size);
     updated_z = yk / rho + updated_x;
     constraint_vec = ravel_graph_transpose(constraint_graph, size);
