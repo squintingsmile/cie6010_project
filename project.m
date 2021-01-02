@@ -84,6 +84,7 @@ optimal_gap_vec = zeros(iter_count);
 % sigma = 0.5;
 % alpha = 1;
 % gamma = 0.05;
+% prev_graph = total_graph;
 % tic
 % for iter=1:iter_count
 %     [new_graph, obj_diff, obj_val, grad_norm] = armijo_nesterov(total_graph,...
