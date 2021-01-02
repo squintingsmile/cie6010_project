@@ -13,8 +13,36 @@ constraint_graph = zeros(n); % Indicating the inequality contraint on each
                  % constraints
 
 time_val = zeros(iter_count);
-constraint_graph = rand(n, n) * 1 + 0.5;
-constraint_graph(randsample(n * n, n * n - 10)) = 0;
+
+% random constraints
+% constraint_graph = rand(n, n) * 1 + 0.5;
+% constraint_graph(randsample(n * n, n * n - 10)) = 0;
+
+% constraint in the first example
+% for i=1:5
+%     for j=floor(n / 5):floor(4 * n / 5)
+%         constraint_graph(j, floor(n / 12) + floor(i * n / 6)) = 1;
+%     end
+% end
+
+% constraint for the second example
+for i=floor(n / 5):floor(2 * n / 5)
+    for j = floor(n / 5):floor(2 * n / 5)
+        constraint_graph(i, j) = 1;
+    end
+end
+
+for i=floor(3 * n / 5):floor(4 * n / 5)
+    for j = floor(3 * n / 5):floor(4 * n / 5)
+        if i + j < floor(7 * n / 5)
+            continue;
+        end
+        constraint_graph(i, j) = 1;
+    end
+end
+
+
+
 % for i=2:n-1
 %     for j=2:n-1
 %         active_mask(i,j) = 1;
