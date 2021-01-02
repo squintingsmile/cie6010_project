@@ -1,9 +1,9 @@
-n = 40; % Size of the matrix
+n = 20; % Size of the matrix
 length = 1 / (n - 1);
-iter_count = 200;
+iter_count = 10000;
 gradient_diff = 1e-3;
 step_size = 0.2;
-gradient_tol = 1e-8;
+gradient_tol = 1e-4;
 
 total_graph = zeros(n); % Storing the boundary and values of xi,j
 active_mask = zeros(n); % Indicating which points are not boundary 
@@ -12,8 +12,8 @@ constraint_graph = zeros(n); % Indicating the inequality contraint on each
                  % points to be -Inf and the constraint points to be their
                  % constraints
 
-time_val = zeros(n);
-constraint_graph = rand(n, n) * 2 + 2;
+time_val = zeros(iter_count);
+constraint_graph = rand(n, n) * 1 + 0.5;
 constraint_graph(randsample(n * n, n * n - 10)) = 0;
 % for i=2:n-1
 %     for j=2:n-1
@@ -29,7 +29,7 @@ constraint_graph(randsample(n * n, n * n - 10)) = 0;
 for i=2:n-1
     for j=2:n-1
         active_mask(i, j) = 1;
-        total_graph(i, j) = 1;
+        total_graph(i, j) = 0;
     end
 end
 
@@ -40,8 +40,8 @@ r4 = @(x, y)(1 + exp(x * y))^(-1);
 r5 = @(x, y)1 + asin(-1 + 2 * sqrt(x * y));
 constant_boundary = @(x,y) 0;
 
-total_graph = set_boundary(r2, total_graph, n);
-constraint_graph = set_boundary(r1, constraint_graph, n);
+total_graph = set_boundary(r3, total_graph, n);
+constraint_graph = set_boundary(r3, constraint_graph, n);
 
 gradient_norm_vec = zeros(iter_count);
 optimal_gap_vec = zeros(iter_count);
@@ -81,27 +81,27 @@ optimal_gap_vec = zeros(iter_count);
 
 
 % Backtracking with nesterov codes
-sigma = 0.5;
-alpha = 1;
-gamma = 0.05;
-tic
-for iter=1:iter_count
-    [new_graph, obj_diff, obj_val, grad_norm] = armijo_nesterov(total_graph,...
-         constraint_graph, n, length, gradient_diff, sigma, alpha, gamma, prev_graph, iter);
-    prev_graph = total_graph;
-    total_graph = new_graph;
-    
-    time_val(iter) = toc;
-    gradient_norm_vec(iter) = grad_norm;
-    optimal_gap_vec(iter) = obj_val;
-    if grad_norm < gradient_tol
-        fprintf("calculation ends after %d iterations. Norm of gradient is %f\n", iter, grad_norm);
-        break;
-    end
-    if mod(iter, 100) == 0
-        fprintf("iteration count: %d\n", iter);
-    end
-end
+% sigma = 0.5;
+% alpha = 1;
+% gamma = 0.05;
+% tic
+% for iter=1:iter_count
+%     [new_graph, obj_diff, obj_val, grad_norm] = armijo_nesterov(total_graph,...
+%          constraint_graph, n, length, gradient_diff, sigma, alpha, gamma, prev_graph, iter);
+%     prev_graph = total_graph;
+%     total_graph = new_graph;
+%     
+%     time_val(iter) = toc;
+%     gradient_norm_vec(iter) = grad_norm;
+%     optimal_gap_vec(iter) = obj_val;
+%     if grad_norm < gradient_tol
+%         fprintf("calculation ends after %d iterations. Norm of gradient is %f\n", iter, grad_norm);
+%         break;
+%     end
+%     if mod(iter, 100) == 0
+%         fprintf("iteration count: %d\n", iter);
+%     end
+% end
 
 
 % Globalized Newton codes
@@ -163,33 +163,32 @@ end
 % end
 
 % Penalty with globalized Newton codes
-%  sigma = 0.5;
-%  alpha = 1;
-%  gamma = 0.05;
-%  beta1 = 1e-6;
-%  beta2 = 1e-6;
-%  p = 0.1;
-%  a = 5;
-%  constraint_tol = 1e-8;
-% tic
-%  for iter=1:iter_count
-%      a = a * 1.2;
-%      [total_graph, obj_diff, obj_val, grad_norm, newton, constraint] = penalty(total_graph,...
-%      constraint_graph, n, length, gradient_diff, sigma, alpha, gamma, beta1, beta2, p, a, 1e8);
-%      time_val(iter) = toc;
-% 
-%      gradient_norm_vec(iter) = grad_norm;
-%      optimal_gap_vec(iter) = obj_val;
-%  %     fprintf("Constraint violation is %f, Norm of gradient is %f\n", constraint, grad_norm)
-%      if grad_norm < gradient_tol
-%          fprintf("calculation ends after %d iterations", iter);
-%          break;
-%      end
-% 
-%      if mod(iter, 100) == 0
-%          fprintf("iteration count: %d\n", iter);
-%      end
-%  end
+ sigma = 0.5;
+ alpha = 1;
+ gamma = 0.05;
+ beta1 = 1e-6;
+ beta2 = 1e-6;
+ p = 0.1;
+ a = 0.5;
+ constraint_tol = 1e-3;
+tic
+ for iter=1:iter_count
+     [total_graph, obj_diff, obj_val, grad_norm, newton, constraint] = penalty(total_graph,...
+     constraint_graph, n, length, gradient_diff, sigma, alpha, gamma, beta1, beta2, p, a, 1e8);
+     time_val(iter) = toc;
+
+     gradient_norm_vec(iter) = grad_norm;
+     optimal_gap_vec(iter) = obj_val;
+     fprintf("Constraint violation is %f, Norm of gradient is %f\n", constraint, grad_norm)
+     if (grad_norm < gradient_tol) || (constraint < constraint_tol)
+         fprintf("calculation ends after %d iterations", iter);
+         break;
+     end
+    a = a + 5;
+     if mod(iter, 100) == 0
+         fprintf("iteration count: %d\n", iter);
+     end
+ end
 
 
 % admm with globalized Newton codes
@@ -225,7 +224,7 @@ end
 %     optimal_gap_vec(iter) = obj_val;
 %     fprintf("Constraint violation is %f, Norm of gradient is %f\n", constraint, grad_norm);
 %     obj_diff
-%     if grad_norm < gradient_tol || abs(obj_diff) < 1e-5
+%     if grad_norm < gradient_tol || coonstraint < 1e-4
 %         fprintf("calculation ends after %d iterations", iter);
 %         break;
 %     end

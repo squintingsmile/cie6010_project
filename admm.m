@@ -64,7 +64,7 @@ function [graph, obj_diff, obj_val, grad_norm,...
         tmp_mat(2:size-1, 2:size-1) = reshape(descent_direction, [size-2,size-2]);
         descent_direction = transpose(tmp_mat);
         
-        for i=1:100
+        for i=1:32
             tmp_mat = total_graph + current_step * descent_direction;
             tmp_vec = ravel_graph_transpose(tmp_mat, size);
             step_val = eval_graph(tmp_mat, constraint_graph, size, length)...
