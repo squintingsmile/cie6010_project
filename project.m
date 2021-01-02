@@ -203,7 +203,7 @@ tic
 % zk = transpose(total_graph(2:n-1, 2:n-1));
 % zk = zk(:);
 % yk = zeros((n - 2)^2, 1);
-% constraint_tol = 1e-8;
+% constraint_tol = 1e-3;
 % prev_graph = total_graph;
 % 
 % tic
@@ -225,7 +225,7 @@ tic
 %     optimal_gap_vec(iter) = obj_val;
 %     fprintf("Constraint violation is %f, Norm of gradient is %f\n", constraint, grad_norm);
 %     obj_diff
-%     if grad_norm < gradient_tol || coonstraint < 1e-4
+%     if grad_norm < gradient_tol || constraint < constraint_tol
 %         fprintf("calculation ends after %d iterations", iter);
 %         break;
 %     end
