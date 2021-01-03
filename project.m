@@ -19,27 +19,27 @@ time_val = zeros(iter_count);
 % constraint_graph(randsample(n * n, n * n - 10)) = 0;
 
 % constraint in the first example
-% for i=1:5
-%     for j=floor(n / 5):floor(4 * n / 5)
-%         constraint_graph(j, floor(n / 12) + floor(i * n / 6)) = 1;
-%     end
-% end
+for i=1:5
+    for j=floor(n / 5):floor(4 * n / 5)
+        constraint_graph(j, floor(n / 12) + floor(i * n / 6)) = 1;
+    end
+end
 
 % constraint for the second example
-for i=floor(n / 5):floor(2 * n / 5)
-    for j = floor(n / 5):floor(2 * n / 5)
-        constraint_graph(i, j) = 1;
-    end
-end
-
-for i=floor(3 * n / 5):floor(4 * n / 5)
-    for j = floor(3 * n / 5):floor(4 * n / 5)
-        if i + j < floor(7 * n / 5)
-            continue;
-        end
-        constraint_graph(i, j) = 1;
-    end
-end
+% for i=floor(n / 5):floor(2 * n / 5)
+%     for j = floor(n / 5):floor(2 * n / 5)
+%         constraint_graph(i, j) = 1;
+%     end
+% end
+% 
+% for i=floor(3 * n / 5):floor(4 * n / 5)
+%     for j = floor(3 * n / 5):floor(4 * n / 5)
+%         if i + j < floor(7 * n / 5)
+%             continue;
+%         end
+%         constraint_graph(i, j) = 1;
+%     end
+% end
 
 
 
@@ -68,7 +68,7 @@ r4 = @(x, y)(1 + exp(x * y))^(-1);
 r5 = @(x, y)1 + asin(-1 + 2 * sqrt(x * y));
 constant_boundary = @(x,y) 0;
 
-total_graph = set_boundary(r3, total_graph, n);
+total_graph = set_boundary(r4, total_graph, n);
 constraint_graph = set_boundary(r3, constraint_graph, n);
 
 gradient_norm_vec = zeros(iter_count);
@@ -192,77 +192,77 @@ optimal_gap_vec = zeros(iter_count);
 % end
 
 % Penalty with globalized Newton codes
- sigma = 0.5;
- alpha = 1;
- gamma = 0.05;
- beta1 = 1e-6;
- beta2 = 1e-6;
- p = 0.1;
- a = 0.5;
- constraint_tol = 1e-3;
-tic
- for iter=1:iter_count
-     [total_graph, obj_diff, obj_val, grad_norm, newton, constraint] = penalty(total_graph,...
-     constraint_graph, n, length, gradient_diff, sigma, alpha, gamma, beta1, beta2, p, a, 1e8);
-     time_val(iter) = toc;
-
-     gradient_norm_vec(iter) = grad_norm;
-     optimal_gap_vec(iter) = obj_val;
-     fprintf("Constraint violation is %f, Norm of gradient is %f\n", constraint, grad_norm)
-     if (grad_norm < gradient_tol) || (constraint < constraint_tol)
-         fprintf("calculation ends after %d iterations", iter);
-         break;
-     end
-    a = a + 5;
-     if mod(iter, 100) == 0
-         fprintf("iteration count: %d\n", iter);
-     end
- end
+%  sigma = 0.5;
+%  alpha = 1;
+%  gamma = 0.05;
+%  beta1 = 1e-6;
+%  beta2 = 1e-6;
+%  p = 0.1;
+%  a = 0.5;
+%  constraint_tol = 1e-3;
+% tic
+%  for iter=1:iter_count
+%      [total_graph, obj_diff, obj_val, grad_norm, newton, constraint] = penalty(total_graph,...
+%      constraint_graph, n, length, gradient_diff, sigma, alpha, gamma, beta1, beta2, p, a, 1e8);
+%      time_val(iter) = toc;
+% 
+%      gradient_norm_vec(iter) = grad_norm;
+%      optimal_gap_vec(iter) = obj_val;
+%      fprintf("Constraint violation is %f, Norm of gradient is %f\n", constraint, grad_norm)
+%      if (grad_norm < gradient_tol) || (constraint < constraint_tol)
+%          fprintf("calculation ends after %d iterations", iter);
+%          break;
+%      end
+%     a = a + 5;
+%      if mod(iter, 100) == 0
+%          fprintf("iteration count: %d\n", iter);
+%      end
+%  end
 
 
 % admm with globalized Newton codes
-% sigma = 0.5;
-% alpha = 1;
-% gamma = 0.05;
-% beta1 = 1e-6;
-% beta2 = 1e-6;
-% p = 0.1;
-% rho = 10;
-% zk = transpose(total_graph(2:n-1, 2:n-1));
-% zk = zk(:);
-% yk = zeros((n - 2)^2, 1);
-% constraint_tol = 1e-3;
-% prev_graph = total_graph;
-% 
-% tic
-% for iter=1:iter_count
-% %     total_graph
-%     if rho > 10000.0
-%         rho = 10000.0;
-%     end
-%     
-%     prev_graph = total_graph;
-%     
-%     [total_graph, obj_diff, obj_val, grad_norm,...
-%     constraint, zk, yk] = admm(total_graph, constraint_graph, n,...
-%     length, gradient_diff, sigma, alpha, gamma, beta1, beta2, p, rho,...
-%     zk, yk);
-%     time_val(iter) = toc;
-% 
-%     gradient_norm_vec(iter) = grad_norm;
-%     optimal_gap_vec(iter) = obj_val;
-%     fprintf("Constraint violation is %f, Norm of gradient is %f\n", constraint, grad_norm);
-%     obj_diff
-%     if grad_norm < gradient_tol || constraint < constraint_tol
-%         fprintf("calculation ends after %d iterations", iter);
-%         break;
-%     end
-%     
-% %     rho = rho * 1.1;
-%     if mod(iter, 100) == 0
-%         fprintf("iteration count: %d\n", iter);
-%     end
-% end
+sigma = 0.5;
+alpha = 1;
+gamma = 0.05;
+beta1 = 1e-6;
+beta2 = 1e-6;
+p = 0.1;
+rho = 10;
+zk = transpose(total_graph(2:n-1, 2:n-1));
+zk = zk(:);
+yk = zeros((n - 2)^2, 1);
+constraint_tol = 1e-3;
+prev_graph = total_graph;
+
+tic
+for iter=1:iter_count
+%     total_graph
+    if rho > 10000.0
+        rho = 10000.0;
+    end
+    
+    prev_graph = total_graph;
+    
+    [total_graph, obj_diff, obj_val, grad_norm,...
+    constraint, zk, yk, primal_res, dual_res] = admm(total_graph, constraint_graph, n,...
+    length, gradient_diff, sigma, alpha, gamma, beta1, beta2, p, rho,...
+    zk, yk);
+    time_val(iter) = toc;
+
+    gradient_norm_vec(iter) = grad_norm;
+    optimal_gap_vec(iter) = obj_val;
+    fprintf("Constraint violation is %f, Norm of gradient is %f\n", constraint, grad_norm);
+    fprintf("Primal residual is %f. Dual residual is %f\n", primal_res, dual_res);
+    if grad_norm < gradient_tol || (primal_res < 1e-4 && dual_res < 1e-4)
+        fprintf("calculation ends after %d iterations", iter);
+        break;
+    end
+    
+%     rho = rho * 1.1;
+    if mod(iter, 100) == 0
+        fprintf("iteration count: %d\n", iter);
+    end
+end
 
 
 % Plot the surface

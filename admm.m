@@ -1,9 +1,9 @@
-function [graph, obj_diff, obj_val, grad_norm,...
-    constraint, updated_z, updated_y] = admm(total_graph, constraint_graph, size,...
+function [graph, obj_diff, obj_val, grad_norm,constraint, updated_z, updated_y,...
+    primal_res, dual_res] = admm(total_graph, constraint_graph, size,...
     length, gradient_diff, sigma, alpha, gamma, beta1, beta2, p, rho,...
     zk, yk)
 
-    iter_count = 200;
+    iter_count = 128;
     
 %     total_graph
 %     constraint_graph
@@ -18,6 +18,7 @@ function [graph, obj_diff, obj_val, grad_norm,...
     
     obj_diff = eval_graph(total_graph, constraint_graph, size, length);
     
+    xk = ravel_graph_transpose(total_graph, size);
     % Minimizing the augmented lagrangian with respect to x using the
     % globalized newton's method
     for iter=1:iter_count
@@ -99,6 +100,11 @@ function [graph, obj_diff, obj_val, grad_norm,...
 %     graph
     obj_val = eval_graph(total_graph, constraint_graph, size, length);
    
+    updated_r = updated_x - updated_z;
+    primal_res = norm(updated_r);
+    
+    updated_s = rho * (zk - updated_z);
+    dual_res = norm(updated_s);
 end
 
 function vec = ravel_graph_transpose(graph, size)
